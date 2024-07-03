@@ -1,0 +1,126 @@
+﻿@page "/tables/create"
+@inject Getpass.Components.Data.AppDb DB
+@using Getpass.Components.Data;
+
+
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+<PageTitle>Create</PageTitle>
+<head>
+    <link href="_content/Blazored.toast.css" rel="stylesheet"/>
+</head>
+
+<h1>Create</h1>
+
+<h4>Gate Pass</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Tables" OnValidSubmit="AddTables" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="VRno" class="form-label">VR Number:</label>
+                <InputNumber id="sign" @bind-Value="Tables.VRn" class="form-control" />
+                <ValidationMessage For="() => Tables.VRn" class="text-danger" />
+            </div>       
+            <div class="mb-3">
+                <label for="dateonly" class="form-label">Date:</label> 
+                <InputDate id="dateonly" @bind-Value="Tables.DateOnly" class="form-control" /> 
+                <ValidationMessage For="() => Tables.DateOnly" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="timerecived" class="form-label">Time Recived:</label> 
+                <InputDate Type="InputDateType.Time" id="timerecived" @bind-Value="Tables.TimeRecived" class="form-control" /> 
+                <ValidationMessage For="() => Tables.TimeRecived" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="dname" class="form-label">Driver Name:</label> 
+                <InputSelect id="dname" @bind-Value="Tables.DName" class="form-control">
+                    <option>__Select </option>
+                    @foreach (var sap in _seatCap)
+                    {
+                        <option>@sap.Name </option>
+                    }
+                    </InputSelect>
+                    
+                <ValidationMessage For="() => Tables.DName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="reason" class="form-label">Reason:</label> 
+                <InputText id="reason" @bind-Value="Tables.Reason" class="form-control" /> 
+                <ValidationMessage For="() => Tables.Reason" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="auth" class="form-label">Authorize by:</label>
+                <InputSelect id="auth" @bind-Value="Tables.Auth" class="form-control"> 
+                 <option value="">__Select</option>
+                 <option value="Saman">Saman</option>
+                 <option value="Thilina">Thilina</option>
+                 <option value="Prasana">Prasana</option>
+                 </InputSelect>
+
+                <ValidationMessage For="() => Tables.Auth" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="vnumber" class="form-label">Vehicle Number:</label>
+                <InputSelect id="vnumber" @bind-Value="Tables.VNumber" class="form-control" >
+                    <option value="">__Select</option>
+                    @foreach (var op in _Vnum)
+                    {
+                        <option>@op.VehicleNumber</option>
+                    }
+                    </InputSelect>
+                <ValidationMessage For="() => Tables.VNumber" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="dest" class="form-label">Destination:</label> 
+                <InputText id="dest" @bind-Value="Tables.Dest" class="form-control" /> 
+                <ValidationMessage For="() => Tables.Dest" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="sign" class="form-label">Sign:</label> 
+                <InputText id="sign" @bind-Value="Tables.Sign" class="form-control" /> 
+                <ValidationMessage For="() => Tables.Sign" class="text-danger" /> 
+            </div>        
+            <button type="submit" @onclick="@(()=> toastService.ShowSuccess("Added to the Database"))" class="btn btn-primary">Create </button>
+         
+           
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/">Back to Home</a>
+</div>
+
+
+@code {
+    
+    [SupplyParameterFromForm]
+    public Tables Tables { get; set; } = new();
+    List<DriverPool> _seatCap = new List<DriverPool>();
+    List<Vnum> _Vnum = new List<Vnum>();
+
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddTables()
+    {
+        DB.Tables.Add(Tables);
+        await DB.SaveChangesAsync();
+        NavigationManager.NavigateTo("/tables");
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+
+        _seatCap = DB.DriverPool.ToList();
+        _Vnum = DB.Vnum.ToList();
+    }
+   
+
+
+   
+}

@@ -1,0 +1,33 @@
+﻿@page "/tables"
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject Getpass.Components.Data.AppDb DB
+@using Getpass.Components.Data
+
+<PageTitle>Table</PageTitle>
+
+<h1>Today Gate Passes</h1>
+<input type="date" @bind="Date" @bind:event="oninput" autofocus />
+
+
+<QuickGrid Class="table" Items="DB.Tables">
+    <PropertyColumn Property="tables => tables.VRn"/>
+    <PropertyColumn Property="tables => tables.DateOnly" Sortable="true"/>
+    <PropertyColumn Property="tables => tables.DName" />
+    <PropertyColumn Property="tables => tables.VNumber" />
+    <PropertyColumn Property="tables => tables.Auth" />
+    <PropertyColumn Property="tables => tables.Dest" />
+    <PropertyColumn Property="tables => tables.TimeRecived" />
+    <PropertyColumn Property="tables => tables.Sign" />
+    <TemplateColumn Context="tables">
+        <a href="@($"tables/edit?vrn={tables.VRn}")">Edit</a> |
+        <a href="@($"tables/details?vrn={tables.VRn}")">Ticket</a> |
+        <a href="@($"tables/delete?vrn={tables.VRn}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code{
+    DateOnly Date { get; set; }
+    IQueryable<Tables> filter => DB.Tables.Where(m => m.DateOnly.Equals(Date));
+
+
+}

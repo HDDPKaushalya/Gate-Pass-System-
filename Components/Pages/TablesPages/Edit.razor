@@ -1,0 +1,143 @@
+﻿@page "/Tables/edit"
+@inject Getpass.Components.Data.AppDb DB
+@using Getpass.Components.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Tables</h4>
+<hr />
+@if (Tables is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Tables" OnValidSubmit="UpdateTables" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Tables.VRn" value="@Tables.VRn" />
+            
+                <div class="mb-3">
+                    <label for="dateonly" class="form-label">Date:</label>
+                    <InputDate id="dateonly" @bind-Value="Tables.DateOnly" class="form-control" />
+                    <ValidationMessage For="() => Tables.DateOnly" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="timerecived" class="form-label">Time Recived:</label>
+                    <InputDate Type="InputDateType.Time" id="timerecived" @bind-Value="Tables.TimeRecived" class="form-control" />
+                    <ValidationMessage For="() => Tables.TimeRecived" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="dname" class="form-label">Driver Name:</label>
+                    <InputSelect id="dname" @bind-Value="Tables.DName" class="form-control">
+                        <option>@Tables.DName</option>
+                        @foreach (var sap in _seatCap)
+                        {
+                            <option>@sap.Name </option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Tables.DName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="reason" class="form-label">Reason:</label>
+                    <InputText id="reason" @bind-Value="Tables.Reason" class="form-control" />
+                    <ValidationMessage For="() => Tables.Reason" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="auth" class="form-label">Authorize by:</label>
+                    <InputSelect id="auth" @bind-Value="Tables.Auth" class="form-control">
+                        <option value="@Tables.Auth">@Tables.Auth</option>
+                        <option value="Saman">Saman</option>
+                        <option value="Thilina">Thilina</option>
+                        <option value="Prasana">Prasana</option>
+                        </InputSelect>
+                    <ValidationMessage For="() => Tables.Auth" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="vnumber" class="form-label">Vehicle Number:</label>
+                    <InputSelect id="vnumber" @bind-Value="Tables.VNumber" class="form-control" >
+                        <option>@Tables.VNumber</option>
+                        @foreach (var op in _Vnum)
+                        {
+                            <option>@op.VehicleNumber</option>
+                        }
+                        </InputSelect>
+                    <ValidationMessage For="() => Tables.VNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="dest" class="form-label">Destination:</label>
+                    <InputText id="dest" @bind-Value="Tables.Dest" class="form-control" />
+                    <ValidationMessage For="() => Tables.Dest" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="sign" class="form-label">Sign:</label>
+                    <InputText id="sign" @bind-Value="Tables.Sign" class="form-control" />
+                    <ValidationMessage For="() => Tables.Sign" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/tables">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int VRn { get; set; }
+
+    [SupplyParameterFromForm]
+    public Tables? Tables { get; set; }
+    List<DriverPool> _seatCap = new List<DriverPool>();
+    List<Vnum> _Vnum = new List<Vnum>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _seatCap = DB.DriverPool.ToList();
+        _Vnum = DB.Vnum.ToList();
+        Tables ??= await DB.Tables.FirstOrDefaultAsync(m => m.VRn == VRn);
+
+        if (Tables is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateTables()
+    {
+        DB.Attach(Tables!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!TablesExists(Tables!.VRn))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/tables");
+    }
+
+    bool TablesExists(int vrn)
+    {
+        return DB.Tables.Any(e => e.VRn == vrn);
+    }
+}

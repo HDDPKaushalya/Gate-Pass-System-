@@ -1,0 +1,136 @@
+﻿@page "/tables/details"
+@inject Getpass.Components.Data.AppDb DB
+@using Getpass.Components.Data
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+@using System.Net.Mail
+
+<PageTitle>Gate Pass</PageTitle>
+
+<div>
+    <h4>Gate Pass</h4>
+    <hr />
+    @if (tables is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <form>
+                <div class="contant">
+                    <br />
+                    <div class="date">
+                    </div>
+                    <div class="container-md">
+                        <div class="text-center">
+                            <label>බොඩීලයින් (පෞද්ගලික) සමාගම  - හොරණ</label><br />
+                            <label class="text-md-center">වාහන පිටව්මේ ආවසර පත</label>
+                            <br />
+                            <br />
+
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>දිනය:</label>
+                                @tables.DateOnly
+                            </div>
+                            <div class="col-md-4">
+                                <label>වේලාව:</label>
+                                @tables.TimeRecived
+                            </div>
+
+                            <div class="col-md-4">
+                                <label>VR No:</label>
+                                @tables.VRn
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>රියදුරු නම:</label>
+                                @tables.DName
+                            </div>
+                            <div class="col-md-4">
+                                <label>හේතුව:</label>
+                                @tables.Reason
+                            </div>
+                            <div class="col-md-4">
+                                <label>විසින් අවසර දී ඇත:</label>
+                                @tables.Auth
+                            </div>
+                            <br />
+                            <br />
+                            <div class="col-md-4">
+                                <label>වාහන අංකය: </label>
+                                @tables.VNumber
+                            </div>
+                            <div class="col-md-4">
+                                <label>ගමනාන්තය: </label>
+                                @tables.Dest
+                            </div>
+                            <div class="col-md-4">
+                                <label>අත්සන:</label>
+                                @tables.Sign
+                        </div>
+                    </div>              
+                </div>
+                <br />
+                <br />
+                </div>
+            </form>
+
+     
+        </dl>
+        <div>
+            <a href="@($"/tables/edit?vrn={tables.VRn}")">Edit</a> |
+            <a href="@($"/tables")">Back to List</a> |
+            <a @onclick="Sendmail" href="@($"/tables")">Send the Mail</a>
+
+        </div>
+    }
+</div>
+
+@code {
+    Tables? tables;
+
+    [SupplyParameterFromQuery]
+    public int VRn { get; set; }
+    private string Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        tables = await DB.Tables.FirstOrDefaultAsync(m => m.VRn == VRn);
+
+        if (tables is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+      public  void Sendmail()
+    {
+        try
+        {
+            using(MailMessage mail = new MailMessage())
+            {
+                mail.From = new MailAddress("DakshinaK@masholdings.com");
+                mail.To.Add("DakshinaK@masholdings.com");
+                mail.Subject = "Sending Mail Test";
+                mail.Body = "<h1>Gate Pass</h1>";
+                mail.IsBodyHtml = true;
+
+                using(SmtpClient smtp = new SmtpClient("smtp.masholdings.com", 587))
+                {
+                    smtp.Credentials = new System.Net.NetworkCredential("DakshinaK@masholdings.com","catcat@123@345");
+                    smtp.EnableSsl = true;
+                    smtp.Send(mail);
+                    Message = "Mail sent";
+
+                }
+            }
+        }
+        catch(Exception ex)
+        {
+            Message = ex.Message;
+        }
+    }
+}
